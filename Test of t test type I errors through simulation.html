@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="John Willoughby">
+<meta name="dcterms.date" content="2025-01-09">
+
+<title>Test of type I error rates from the independent-sample t test through simulation</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="Test of t test type I errors through simulation_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Test of t test type I errors through simulation_files/libs/quarto-html/quarto.js"></script>
+<script src="Test of t test type I errors through simulation_files/libs/quarto-html/popper.min.js"></script>
+<script src="Test of t test type I errors through simulation_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Test of t test type I errors through simulation_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Test of t test type I errors through simulation_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Test of t test type I errors through simulation_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Test of t test type I errors through simulation_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Test of t test type I errors through simulation_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Test of t test type I errors through simulation_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="Test of t test type I errors through simulation_files/libs/tabwid-1.1.3/tabwid.css" rel="stylesheet">
+<script src="Test of t test type I errors through simulation_files/libs/tabwid-1.1.3/tabwid.js"></script>
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Test of type I error rates from the independent-sample t test through simulation</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>John Willoughby </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">January 9, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<p>This paper examines, through simulations, how well the independent-sample t test approximates the desired Type I error specified in the test. The results for equal and unequal sample sizes and equal and unequal variances are examined, both for normal and skewed distributions.</p>
+<p>In each of the situations examined, both samples come from the same population, so any p values less than the specified alpha value represent Type I errors (often called false-change errors in a monitoring context).</p>
+<p>Bradley <span class="citation" data-cites="bradleyRobustness1978">(<a href="#ref-bradleyRobustness1978" role="doc-biblioref">1978</a>)</span> provided a quantified measure of robustness. His criterion for a “neglible” departure of the realized type I error rate from the desired alpha was that it should fall within the interval 0.9*alpha to 1.1*alpha, meaning that for a desired alpha of 0.05, the realized type I error rate should be inside the interval 0.045 to 0.055. For a desired alpha of 0.10, the realized type I error rate should be inside the interval 0.09 to 0.11. His “liberal” criterion for robustness specified that the realized Type 1 error rate should fall within the interval 0.5*alpha to 1.5*alpha. So if the specified alpha is 0.05, then the realized Type 1 error rate should be inside the interval 0.025 to 0.075. If the specified alpha is 0.10, then the realized Type I error rate should fall within the interval 0.05 to 0.15. We will look only at alpha = 0.05 here, but you can change the alpha level in the code below to examine what would happen with different alpha values.</p>
+<p>Load needed packages:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse) <span class="co"># Loads ggplot, dplyr, and several other packages.</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(flextable) <span class="co"># To make tables</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fGarch) <span class="co"># To create skewed normal random values</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Let’s examine 24 different several sampling scenarios. We’ll first use the standard normal distribution, which has a mean of 0 and a standard deviation of 1 and then alter the sample size and increase the standard deviation of one or both of the samples to 2. Later below we’ll use a right-skewed normal distribution with a mean of 0 and standard deviations of 1 or 2.</p>
+<p>We’ll also run t tests using both var.equal = FALSE, which runs a t test assuming unequal variance (also called a Welch t test), and var.equal = TRUE, which runs a t test assuming equal variance.</p>
+<p>In each of these scenarios both samples have the same mean, so we’re essentially assuming that the two samples come from a population with a mean of zero; thus we’re examining the null distribution for a population with a mean of zero. This means that when we run a t test on these samples and set the desired alpha to 0.05, just by chance about 5% of the p values should fall below 0.05. These are type I errors.</p>
+<p>We’ll set the number of simulations to 5000 for each comparison, but this can be changed in the code below.</p>
+<p>Note that I am not setting a random number seed for these simulations, so if you run the simulations you will get somewhat different results.</p>
+<p>The following combinations of n1 size, n2 size, and sample standard deviations (s1 and s2) are run (means are 0 in all cases):</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>n1</th>
+<th>n2</th>
+<th>s1</th>
+<th>s1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>10</td>
+<td>10</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td>10</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td>10</td>
+<td>10</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td>20</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>20</td>
+<td>10</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td>20</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td>20</td>
+<td>10</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>30</td>
+<td>30</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>30</td>
+<td>30</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>30</td>
+<td>30</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td>30</td>
+<td>30</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>30</td>
+<td>50</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>50</td>
+<td>30</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>30</td>
+<td>50</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td>50</td>
+<td>30</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>50</td>
+<td>50</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>50</td>
+<td>50</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>50</td>
+<td>50</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>100</td>
+<td>100</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>100</td>
+<td>100</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td>100</td>
+<td>100</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>100</td>
+<td>50</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>100</td>
+<td>50</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>50</td>
+<td>100</td>
+<td>1</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>Set the number of simulations to run.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>nreps <span class="ot">=</span> <span class="dv">5000</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Set the alpha level</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>alpha.p <span class="ot">=</span> <span class="fl">0.05</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="t-tests-on-samples-from-normal-populations" class="level3">
+<h3 class="anchored" data-anchor-id="t-tests-on-samples-from-normal-populations">t tests on samples from normal populations</h3>
+<p>Create a data frame with combinations of sample sizes and standard deviations for the two samples, n1 and n2. Standard deviations for each sample are specified in columns s1 and s2. Add columns p.t.var.equal and p.t.var.unequal and fill with NA. The mean type I error values for these columns will be filled in by the for loop below.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>combos <span class="ot">=</span> <span class="fu">data.frame</span>(<span class="at">n1 =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">30</span>,</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>                           <span class="dv">30</span>, <span class="dv">30</span>, <span class="dv">30</span>, <span class="dv">30</span>, <span class="dv">50</span>, <span class="dv">30</span>, <span class="dv">50</span>, <span class="dv">50</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>                           <span class="dv">50</span>, <span class="dv">50</span>, <span class="dv">100</span>, <span class="dv">100</span>, <span class="dv">100</span>, <span class="dv">100</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>                           <span class="dv">100</span>, <span class="dv">50</span>),</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>                    <span class="at">n2 =</span> <span class="fu">c</span>(<span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">10</span>, <span class="dv">30</span>, </span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>                           <span class="dv">30</span>, <span class="dv">30</span>, <span class="dv">30</span>, <span class="dv">50</span>, <span class="dv">30</span>, <span class="dv">50</span>, <span class="dv">30</span>, <span class="dv">50</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>                           <span class="dv">50</span>, <span class="dv">50</span>, <span class="dv">100</span>, <span class="dv">100</span>, <span class="dv">100</span>, <span class="dv">50</span>, <span class="dv">50</span>, <span class="dv">100</span>),</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>                    <span class="at">s1 =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>                           <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">1</span>,</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>                           <span class="dv">1</span>, <span class="dv">1</span>),</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>                    <span class="at">s2 =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">1</span>,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>                           <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>,</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>                           <span class="dv">2</span>, <span class="dv">2</span>),</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>                    <span class="at">p.t.var.equal =</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="dv">24</span>),</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>                    <span class="at">p.t.var.unequal =</span> <span class="fu">rep</span>(<span class="cn">NA</span>, <span class="dv">24</span>))</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>combos2 <span class="ot">=</span> combos  <span class="co"># Create a second combos df for later analysis on skewed data.              </span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The for loop below takes the sample sizes and standard deviations in each row of the combos data frame created above, draws two random samples from the same populations, performs a t test on each pair of samples and records the p value for the test. It does this the number of times specified in nreps above, and returns the mean proportion of times the p values fell below the alpha level specified (0.05 as entered above). This is the empirical type I error rate for each of the 24 sampling scenarios.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(combos)) {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>type.<span class="fl">1.</span>err.var.equal <span class="ot">=</span> <span class="fu">mean</span>(<span class="fu">replicate</span>(nreps, <span class="fu">t.test</span>(<span class="fu">rnorm</span>(combos<span class="sc">$</span>n1[i], <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> combos<span class="sc">$</span>s1[i]), <span class="fu">rnorm</span>(combos<span class="sc">$</span>n2[i], <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> combos<span class="sc">$</span>s2[i]), <span class="at">var.equal =</span> <span class="cn">TRUE</span>)<span class="sc">$</span>p.value) <span class="sc">&lt;</span> <span class="fl">0.05</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>type.<span class="fl">1.</span>err.var.unequal <span class="ot">=</span> <span class="fu">mean</span>(<span class="fu">replicate</span>(nreps, <span class="fu">t.test</span>(<span class="fu">rnorm</span>(combos<span class="sc">$</span>n1[i], <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> combos<span class="sc">$</span>s1[i]), <span class="fu">rnorm</span>(combos<span class="sc">$</span>n2[i], <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> combos<span class="sc">$</span>s2[i]), <span class="at">var.equal =</span> <span class="cn">FALSE</span>)<span class="sc">$</span>p.value) <span class="sc">&lt;</span> <span class="fl">0.05</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>combos[i, <span class="dv">5</span>] <span class="ot">=</span> type.<span class="fl">1.</span>err.var.equal</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  combos[i, <span class="dv">6</span>] <span class="ot">=</span> type.<span class="fl">1.</span>err.var.unequal</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Put the results in a table.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>ft1 <span class="ot">=</span> <span class="fu">flextable</span>(combos)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>ft1 <span class="ot">=</span> <span class="fu">set_caption</span>(ft1,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">caption =</span> <span class="fu">paste0</span>(<span class="st">"Empirical type I error rates from "</span>, nreps, <span class="st">" simulations of independent-sample t tests on samples from a normal population with a mean of 0 and equal or unequal standard deviations with various equal or unequal sample sizes. The target alpha value is "</span>, alpha.p,<span class="st">" and t tests were run  assuming equal or unequal variance. "</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_header_labels</span>(ft1, <span class="at">p.t.var.equal =</span> <span class="st">"Type I error from equal variance t test"</span>, <span class="at">p.t.var.unequal =</span> <span class="st">"Type I error from unequal variance t test"</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>ft1                                  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+
+<div class="tabwid"><style>.cl-beb0f83e{}.cl-bea4ab24{font-family:'Arial';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-bea89860{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-bea8bfa2{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bea8bfa3{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-bea8bfac{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-beb0f83e"><thead><tr style="overflow-wrap:break-word;"><th class="cl-bea8bfa2"><p class="cl-bea89860"><span class="cl-bea4ab24">n1</span></p></th><th class="cl-bea8bfa2"><p class="cl-bea89860"><span class="cl-bea4ab24">n2</span></p></th><th class="cl-bea8bfa2"><p class="cl-bea89860"><span class="cl-bea4ab24">s1</span></p></th><th class="cl-bea8bfa2"><p class="cl-bea89860"><span class="cl-bea4ab24">s2</span></p></th><th class="cl-bea8bfa2"><p class="cl-bea89860"><span class="cl-bea4ab24">Type I error from equal variance t test</span></p></th><th class="cl-bea8bfa2"><p class="cl-bea89860"><span class="cl-bea4ab24">Type I error from unequal variance t test</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">10</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">10</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0482</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0460</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">10</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">10</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">2</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0550</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0494</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">10</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">10</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">2</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">2</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0530</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0426</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">10</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">20</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0536</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0524</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">20</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">10</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0532</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0472</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">10</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">20</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">2</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0192</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0442</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">20</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">10</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">2</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.1114</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0544</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">30</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">30</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0510</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0498</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">30</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">30</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">2</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0572</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0454</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">30</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">30</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">2</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">2</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0468</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0500</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">30</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">30</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">2</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0548</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0516</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">30</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">50</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0494</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0494</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">50</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">30</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0484</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0542</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">30</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">50</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">2</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0200</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0542</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">50</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">30</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">2</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.1006</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0474</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">50</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">50</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0528</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0470</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">50</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">50</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">2</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0532</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0446</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">50</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">50</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">2</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0582</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0502</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">100</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">100</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0474</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0434</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">100</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">100</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">2</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0504</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0448</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">100</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">100</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">2</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0472</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0540</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">100</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">50</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0470</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0510</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">100</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">50</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">2</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.1030</span></p></td><td class="cl-bea8bfa3"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0558</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-bea8bfac"><p class="cl-bea89860"><span class="cl-bea4ab24">50</span></p></td><td class="cl-bea8bfac"><p class="cl-bea89860"><span class="cl-bea4ab24">100</span></p></td><td class="cl-bea8bfac"><p class="cl-bea89860"><span class="cl-bea4ab24">1</span></p></td><td class="cl-bea8bfac"><p class="cl-bea89860"><span class="cl-bea4ab24">2</span></p></td><td class="cl-bea8bfac"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0190</span></p></td><td class="cl-bea8bfac"><p class="cl-bea89860"><span class="cl-bea4ab24">0.0446</span></p></td></tr></tbody></table></div>
+</div>
+</div>
+<p>When sample sizes and variances (standard deviations) are the same, the type I error rates from the equal variance t test are about the same as those from the unequal variance t test and both are close to the desired alpha of 0.05. When sample sizes are different but variances are equal, the same is true. When sample sizes are equal but variances are different, the type I error rates are still rather close to each other and to 0.05. But when both sample sizes and variances are different, the type I error rate from the equal variance test deviates considerably from 0.05. When the variance of the larger sample is greater than the variance of the smaller sample (as in row 6 of the table), the type I error rate of the equal variance test is too far below the target alpha. When the variance of the smaller sample is greater than the variance of the larger sample (e.g., row 7), the type I error rate from the equal variance test is much too high. The type I error rate for the unequal variance t test remains close to 0.05 for all cases. The lesson here is to always use the unequal variance t test.</p>
+</section>
+<section id="t-tests-on-samples-from-right-skewed-normal-population" class="level3">
+<h3 class="anchored" data-anchor-id="t-tests-on-samples-from-right-skewed-normal-population">t tests on samples from right-skewed normal population</h3>
+<p>Now we’ll do the same analysis except the samples come from a right-skewed normal population. The mean is still zero and the standard deviation is either 1 or 2. But now there’s a skewness value that skews the population to the right. Here are examples of populations with this skew, one with a standard deviation of 1 and the other with a standard deviation of 2.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>skew1 <span class="ot">=</span> <span class="fu">rsnorm</span>(<span class="dv">10000</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">1</span>, <span class="at">xi =</span> <span class="dv">3</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>skew2 <span class="ot">=</span> <span class="fu">rsnorm</span>(<span class="dv">10000</span>, <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> <span class="dv">2</span>, <span class="at">xi =</span> <span class="dv">3</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(skew1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Test-of-t-test-type-I-errors-through-simulation_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(skew2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Test-of-t-test-type-I-errors-through-simulation_files/figure-html/unnamed-chunk-7-2.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(combos2)) {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>type.<span class="fl">1.</span>err.var.equal <span class="ot">=</span> <span class="fu">mean</span>(<span class="fu">replicate</span>(nreps, <span class="fu">t.test</span>(<span class="fu">rsnorm</span>(combos2<span class="sc">$</span>n1[i], <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> combos2<span class="sc">$</span>s1[i], <span class="at">xi =</span> <span class="dv">3</span>), <span class="fu">rsnorm</span>(combos2<span class="sc">$</span>n2[i], <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> combos2<span class="sc">$</span>s2[i], <span class="at">xi =</span> <span class="dv">3</span>), <span class="at">var.equal =</span> <span class="cn">TRUE</span>)<span class="sc">$</span>p.value) <span class="sc">&lt;</span> <span class="fl">0.05</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>type.<span class="fl">1.</span>err.var.unequal <span class="ot">=</span> <span class="fu">mean</span>(<span class="fu">replicate</span>(nreps, <span class="fu">t.test</span>(<span class="fu">rsnorm</span>(combos2<span class="sc">$</span>n1[i], <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> combos2<span class="sc">$</span>s1[i], <span class="at">xi =</span> <span class="dv">3</span>), <span class="fu">rsnorm</span>(combos2<span class="sc">$</span>n2[i], <span class="at">mean =</span> <span class="dv">0</span>, <span class="at">sd =</span> combos2<span class="sc">$</span>s2[i], <span class="at">xi =</span> <span class="dv">3</span>), <span class="at">var.equal =</span> <span class="cn">FALSE</span>)<span class="sc">$</span>p.value) <span class="sc">&lt;</span> <span class="fl">0.05</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>combos2[i, <span class="dv">5</span>] <span class="ot">=</span> type.<span class="fl">1.</span>err.var.equal</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  combos2[i, <span class="dv">6</span>] <span class="ot">=</span> type.<span class="fl">1.</span>err.var.unequal</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Put the results in a table.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>ft2 <span class="ot">=</span> <span class="fu">flextable</span>(combos2)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>   </span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>ft2 <span class="ot">=</span> <span class="fu">set_caption</span>(ft2,</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>                 <span class="at">caption =</span> <span class="fu">paste0</span>(<span class="st">"Empirical type I error rates from "</span>, nreps, <span class="st">" simulations of independent-sample t tests on samples from a right-skewed normal population with a mean of 0 and equal or unequal standard deviations with various equal or unequal sample sizes. The target alpha value is "</span>, alpha.p,<span class="st">" and t tests were run  assuming equal or unequal variance. "</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">set_header_labels</span>(ft1, <span class="at">p.t.var.equal =</span> <span class="st">"Type I error from equal variance t test"</span>, <span class="at">p.t.var.unequal =</span> <span class="st">"Type I error from unequal variance t test"</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>ft2                                  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+
+<div class="tabwid"><style>.cl-da2ccdb8{}.cl-da235166{font-family:'Arial';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-da26b554{margin:0;text-align:right;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-da26d3d6{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-da26d3e0{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-da26d3e1{width:0.75in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-da2ccdb8"><thead><tr style="overflow-wrap:break-word;"><th class="cl-da26d3d6"><p class="cl-da26b554"><span class="cl-da235166">n1</span></p></th><th class="cl-da26d3d6"><p class="cl-da26b554"><span class="cl-da235166">n2</span></p></th><th class="cl-da26d3d6"><p class="cl-da26b554"><span class="cl-da235166">s1</span></p></th><th class="cl-da26d3d6"><p class="cl-da26b554"><span class="cl-da235166">s2</span></p></th><th class="cl-da26d3d6"><p class="cl-da26b554"><span class="cl-da235166">Type I error from equal variance t test</span></p></th><th class="cl-da26d3d6"><p class="cl-da26b554"><span class="cl-da235166">Type I error from unequal variance t test</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">10</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">10</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0476</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0440</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">10</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">10</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">2</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0600</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0590</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">10</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">10</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">2</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">2</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0480</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0468</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">10</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">20</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0478</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0598</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">20</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">10</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0468</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0500</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">10</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">20</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">2</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0232</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0494</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">20</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">10</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">2</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.1192</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0632</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">30</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">30</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0512</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0508</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">30</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">30</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">2</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0546</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0534</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">30</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">30</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">2</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">2</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0412</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0452</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">30</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">30</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">2</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0538</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0516</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">30</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">50</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0536</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0488</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">50</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">30</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0444</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0484</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">30</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">50</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">2</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0254</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0532</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">50</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">30</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">2</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0860</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0500</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">50</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">50</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0526</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0470</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">50</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">50</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">2</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0578</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0492</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">50</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">50</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">2</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0528</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0484</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">100</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">100</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0510</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0470</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">100</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">100</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">2</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0500</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0492</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">100</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">100</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">2</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0432</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0504</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">100</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">50</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0512</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0514</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">100</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">50</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">2</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.1094</span></p></td><td class="cl-da26d3e0"><p class="cl-da26b554"><span class="cl-da235166">0.0540</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-da26d3e1"><p class="cl-da26b554"><span class="cl-da235166">50</span></p></td><td class="cl-da26d3e1"><p class="cl-da26b554"><span class="cl-da235166">100</span></p></td><td class="cl-da26d3e1"><p class="cl-da26b554"><span class="cl-da235166">1</span></p></td><td class="cl-da26d3e1"><p class="cl-da26b554"><span class="cl-da235166">2</span></p></td><td class="cl-da26d3e1"><p class="cl-da26b554"><span class="cl-da235166">0.0176</span></p></td><td class="cl-da26d3e1"><p class="cl-da26b554"><span class="cl-da235166">0.0544</span></p></td></tr></tbody></table></div>
+</div>
+</div>
+<p>The unequal variance t test performs well with these skewed normal distributions regardless of unequal sample sizes and variance. The equal variance t test has the same problems as for the normal distribution: poor type I error rates, which are too low when the variance of the larger sample is greater and too high when the variance of the smaller sample is greater.</p>
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-bradleyRobustness1978" class="csl-entry" role="listitem">
+Bradley, James V. 1978. <span>“Robustness?”</span> <em>British Journal of Mathematical and Statistical Psychology</em> 31 (2): 144–52. <a href="https://doi.org/10.1111/j.2044-8317.1978.tb00581.x">https://doi.org/10.1111/j.2044-8317.1978.tb00581.x</a>.
+</div>
+</div></section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
