@@ -75,7 +75,7 @@ alpha.p = 0.05
 
 ### t tests on samples from normal populations
 
-Create a data frame with combinations of sample sizes and standard deviations for the two samples, n1 and n2. Standard deviations for each sample are specified in columns s1 and s2. Add columns p.t.var.equal and p.t.var.unequal and fill with NA. The mean type I error values for these columns will be filled in by the for loop below.
+Create a data frame with combinations of sample sizes and standard deviations for the two samples, n1 and n2. Standard deviations for each sample are specified in columns s1 and s2. Add columns p.t.var.equal and p.t.var.unequal and fill with NA. The mean type I error values for these columns will be filled in by the pmap_dbl() functions run below.
 
 ```{r}
 combos = data.frame(n1 = c(10, 10, 10, 10, 20, 10, 20, 30,
@@ -97,19 +97,32 @@ combos = data.frame(n1 = c(10, 10, 10, 10, 20, 10, 20, 30,
 combos2 = combos  # Create a second combos df for later analysis on skewed data.              
 ```
 
-The for loop below takes the sample sizes and standard deviations in each row of the combos data frame created above, draws two random samples from the same populations, performs a t test on each pair of samples and records the p value for the test. It does this the number of times specified in nreps above, and returns the mean proportion of times the p values fell below the alpha level specified (0.05 as entered above). This is the empirical type I error rate for each of the 24 sampling scenarios.
+The pmap_dbl() function (from the purrr package) takes the sample sizes (n1 and n2) and standard deviations (s1 and s2) in each row of the combos data frame created above, draws two random samples from the same populations, performs a t test on each pair of samples and records the p value for the test. For each pair of sample sizes and standard deviations, it conducts nreps numbers of t tests and returns the mean proportion of times the p values fell below the alpha level specified (0.05 as entered above). This is the empirical type I error rate for each of the 24 sampling scenarios.
+
+In order to apply pmap_dbl() to our data we must first create a list of the four
+variables (n1, n2, s1, and s2) of the combos dataframe and assign it to the argument, .l. We then create an anonymous function (using "\(....)" and apply the function that will calculate the mean p values for the number of replications. We then save these mean p values into the appropriate variables of combos (either p.t.var.equal or p.t.var. unequal).
 
 ```{r}
-for(i in 1:nrow(combos)) {
 
-type.1.err.var.equal = mean(replicate(nreps, t.test(rnorm(combos$n1[i], mean = 0, sd = combos$s1[i]), rnorm(combos$n2[i], mean = 0, sd = combos$s2[i]), var.equal = TRUE)$p.value) < 0.05)
+combos$p.t.var.equal <- pmap_dbl(
+    .l = list(
+        combos$n1,
+        combos$n2,
+        combos$s1,
+        combos$s2
+    ),
+    \(n1, n2, s1, s2) mean(replicate(nreps, t.test(rnorm(n1, mean = 0, sd = s1), rnorm(n2, mean = 0, sd = s2), var.equal = TRUE)$p.value) < 0.05)
+)
 
-type.1.err.var.unequal = mean(replicate(nreps, t.test(rnorm(combos$n1[i], mean = 0, sd = combos$s1[i]), rnorm(combos$n2[i], mean = 0, sd = combos$s2[i]), var.equal = FALSE)$p.value) < 0.05)
-
-combos[i, 5] = type.1.err.var.equal
-  combos[i, 6] = type.1.err.var.unequal
-}
-
+combos$p.t.var.unequal <- pmap_dbl(
+    .l = list(
+        combos$n1,
+        combos$n2,
+        combos$s1,
+        combos$s2
+    ),
+    \(n1, n2, s1, s2) mean(replicate(nreps, t.test(rnorm(n1, mean = 0, sd = s1), rnorm(n2, mean = 0, sd = s2), var.equal = FALSE)$p.value) < 0.05)
+)
 ```
 
 Put the results in a table.
@@ -139,15 +152,25 @@ hist(skew2)
 ```
 
 ```{r}
-for(i in 1:nrow(combos2)) {
+combos2$p.t.var.equal <- pmap_dbl(
+    .l = list(
+        combos2$n1,
+        combos2$n2,
+        combos2$s1,
+        combos2$s2
+    ),
+    \(n1, n2, s1, s2) mean(replicate(nreps, t.test(rsnorm(n1, mean = 0, sd = s1, xi =3), rsnorm(n2, mean = 0, sd = s2, xi =3), var.equal = TRUE)$p.value) < 0.05)
+)
 
-type.1.err.var.equal = mean(replicate(nreps, t.test(rsnorm(combos2$n1[i], mean = 0, sd = combos2$s1[i], xi = 3), rsnorm(combos2$n2[i], mean = 0, sd = combos2$s2[i], xi = 3), var.equal = TRUE)$p.value) < 0.05)
-
-type.1.err.var.unequal = mean(replicate(nreps, t.test(rsnorm(combos2$n1[i], mean = 0, sd = combos2$s1[i], xi = 3), rsnorm(combos2$n2[i], mean = 0, sd = combos2$s2[i], xi = 3), var.equal = FALSE)$p.value) < 0.05)
-
-combos2[i, 5] = type.1.err.var.equal
-  combos2[i, 6] = type.1.err.var.unequal
-}
+combos2$p.t.var.unequal <- pmap_dbl(
+    .l = list(
+        combos2$n1,
+        combos2$n2,
+        combos2$s1,
+        combos2$s2
+    ),
+    \(n1, n2, s1, s2) mean(replicate(nreps, t.test(rsnorm(n1, mean = 0, sd = s1, xi =3), rsnorm(n2, mean = 0, sd = s2, xi =3), var.equal = FALSE)$p.value) < 0.05)
+)
 ```
 
 Put the results in a table.
