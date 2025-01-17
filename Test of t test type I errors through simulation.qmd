@@ -100,7 +100,7 @@ combos2 = combos  # Create a second combos df for later analysis on skewed data.
 The pmap_dbl() function (from the purrr package) takes the sample sizes (n1 and n2) and standard deviations (s1 and s2) in each row of the combos data frame created above, draws two random samples from the same populations, performs a t test on each pair of samples and records the p value for the test. For each pair of sample sizes and standard deviations, it conducts nreps numbers of t tests and returns the mean proportion of times the p values fell below the alpha level specified (0.05 as entered above). This is the empirical type I error rate for each of the 24 sampling scenarios.
 
 In order to apply pmap_dbl() to our data we must first create a list of the four
-variables (n1, n2, s1, and s2) of the combos dataframe and assign it to the argument, .l. We then create an anonymous function (using "\(....)" and apply the function that will calculate the mean p values for the number of replications. We then save these mean p values into the appropriate variables of combos (either p.t.var.equal or p.t.var. unequal).
+variables (n1, n2, s1, and s2) of the combos dataframe and assign it to the argument, .l. We then create an anonymous function and apply the function that will calculate the mean p values for the number of replications. We then save these mean p values into the appropriate variables of combos (either p.t.var.equal or p.t.var. unequal).
 
 ```{r}
 
